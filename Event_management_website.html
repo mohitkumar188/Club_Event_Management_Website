@@ -1,0 +1,1860 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Club - Event Hub & Admin Portal</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        },
+                        accent: {
+                            500: '#ec4899',
+                            600: '#db2777',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Glassmorphism accents */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+        }
+
+        .ticket-edge {
+            background-image: radial-gradient(circle at 0 50%, transparent 12px, #ffffff 13px);
+        }
+
+        .badge-pulse {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse-ring {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.7;
+                transform: scale(1.05);
+            }
+        }
+    </style>
+</head>
+
+<body
+    class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
+
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3 cursor-pointer"
+                onclick="switchView('student'); window.scrollTo({top: 0, behavior: 'smooth'});">
+                <div
+                    class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-accent-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+                    <i data-lucide="sparkles" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <span class="font-display font-bold text-xl tracking-tight text-slate-900">NEXUS<span
+                            class="text-brand-600">CLUB</span></span>
+                    <span
+                        class="hidden sm:inline-block text-xs font-semibold uppercase px-2 py-0.5 ml-2 rounded-full bg-brand-50 text-brand-700 border border-brand-200">
+                        ABES &amp; Tech Council</span>
+                </div>
+            </div>
+
+            <!-- Center Nav Links for Student Mode -->
+            <nav id="student-nav-links"
+                class="hidden md:flex items-center space-x-6 text-sm font-medium text-slate-600">
+                <a href="#about" class="hover:text-brand-600 transition-colors">About</a>
+                <a href="#featured" class="hover:text-brand-600 transition-colors">Featured</a>
+                <a href="#events" class="hover:text-brand-600 transition-colors">All Events</a>
+                <a href="#stats" class="hover:text-brand-600 transition-colors">Club Highlights</a>
+            </nav>
+
+            <!-- View Switcher Toggle & Quick Action -->
+            <div class="flex items-center space-x-3">
+                <!-- Mode Switcher Pill -->
+                <div class="bg-slate-100 p-1 rounded-xl flex items-center border border-slate-200">
+                    <button id="btn-view-student" onclick="switchView('student')"
+                        class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all bg-white text-slate-900 shadow-sm">
+                        <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i>
+                        <span>Student Portal</span>
+                    </button>
+                    <button id="btn-view-admin" onclick="switchView('admin')"
+                        class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 text-slate-500 hover:text-slate-900 transition-all">
+                        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                        <span>Admin Hub</span>
+                    </button>
+                </div>
+
+                <button onclick="openAddEventModal()" id="quick-create-btn"
+                    class="hidden px-3.5 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-medium shadow-sm transition-all flex items-center gap-1.5">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Create Event</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1">
+
+        <!-- ========================================== -->
+        <!-- 1. STUDENT VIEW PORTAL                     -->
+        <!-- ========================================== -->
+        <div id="student-view" class="transition-opacity duration-300">
+
+            <!-- HERO SECTION -->
+            <section
+                class="relative overflow-hidden bg-gradient-to-b from-indigo-50/60 via-white to-slate-50 pt-16 pb-20 border-b border-slate-100">
+                <div class="absolute inset-0 z-0 opacity-40">
+                    <div class="absolute -top-24 -left-24 w-96 h-96 bg-brand-300 rounded-full blur-3xl opacity-40">
+                    </div>
+                    <div class="absolute top-1/2 right-0 w-96 h-96 bg-accent-500 rounded-full blur-3xl opacity-20">
+                    </div>
+                </div>
+
+                <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
+                    <div
+                        class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-50 border border-brand-200/80 text-brand-700 text-xs font-semibold mb-6 shadow-sm">
+                        <span class="w-2 h-2 rounded-full bg-brand-600 animate-ping"></span>
+                        Spring Semester Festivities Live
+                    </div>
+
+                    <h1
+                        class="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight max-w-4xl mx-auto leading-tight sm:leading-tight">
+                        Innovate, Create &amp; Connect at <span
+                            class="bg-clip-text text-transparent bg-gradient-to-r from-brand-600 via-indigo-600 to-accent-600">Nexus
+                            College Club</span>
+                    </h1>
+
+                    <p class="mt-5 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto font-normal">
+                        Your university launchpad for competitive hackathons, technical bootcamps, cultural
+                        extravaganzas, and leadership summits. Secure your spot in upcoming events today!
+                    </p>
+
+                    <div class="mt-8 flex flex-wrap justify-center gap-4">
+                        <a href="#events"
+                            class="px-6 py-3 rounded-xl bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-md shadow-brand-500/25 transition-all flex items-center gap-2">
+                            <i data-lucide="compass" class="w-4 h-4"></i>
+                            <span>Explore All Events</span>
+                        </a>
+                        <a href="#featured"
+                            class="px-6 py-3 rounded-xl bg-white text-slate-700 border border-slate-200 font-semibold text-sm hover:bg-slate-50 transition-all flex items-center gap-2">
+                            <i data-lucide="flame" class="w-4 h-4 text-accent-500"></i>
+                            <span>View Featured Event</span>
+                        </a>
+                    </div>
+
+                    <!-- Quick Stats Counter -->
+                    <div id="stats"
+                        class="mt-14 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto border-t border-slate-200/80 pt-10">
+                        <div class="p-3">
+                            <div class="text-3xl font-display font-extrabold text-slate-900" id="stat-total-events">12+
+                            </div>
+                            <div class="text-xs font-medium text-slate-500 uppercase tracking-wider mt-1">Events Hosted
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <div class="text-3xl font-display font-extrabold text-brand-600" id="stat-total-attendees">
+                                1,240+</div>
+                            <div class="text-xs font-medium text-slate-500 uppercase tracking-wider mt-1">Registrations
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <div class="text-3xl font-display font-extrabold text-slate-900">4.9 / 5</div>
+                            <div class="text-xs font-medium text-slate-500 uppercase tracking-wider mt-1">Campus Rating
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <div class="text-3xl font-display font-extrabold text-accent-600">$8,500</div>
+                            <div class="text-xs font-medium text-slate-500 uppercase tracking-wider mt-1">Prize Pool
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="featured" class="py-14 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider text-accent-600">Spotlight of the
+                            Month</span>
+                        <h2 class="text-2xl sm:text-3xl font-display font-bold text-slate-900">Featured Event</h2>
+                    </div>
+                    <span
+                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold">
+                        <i data-lucide="zap" class="w-3.5 h-3.5 fill-amber-500 text-amber-500"></i> Fast Filling
+                    </span>
+                </div>
+
+                <div id="featured-event-container"
+                    class="relative rounded-3xl overflow-hidden bg-slate-900 text-white shadow-xl shadow-slate-900/10">
+                    <!-- Injected via JavaScript dynamically -->
+                </div>
+            </section>
+
+            <section id="events" class="py-12 bg-slate-100/60 border-t border-slate-200">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+                    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+                        <div>
+                            <span class="text-xs font-bold uppercase tracking-wider text-brand-600">Browse
+                                Schedule</span>
+                            <h2 class="text-2xl sm:text-3xl font-display font-bold text-slate-900">Upcoming Events</h2>
+                            <p class="text-sm text-slate-500 mt-1">Register before spots run out to claim your student
+                                pass.</p>
+                        </div>
+
+                        <!-- Search and Filter Bar -->
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                            <div class="relative w-full sm:w-72">
+                                <i data-lucide="search"
+                                    class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                                <input type="text" id="event-search-input" oninput="handleSearchFilterChange()"
+                                    placeholder="Search by event or venue..."
+                                    class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category Pills -->
+                    <div class="flex items-center gap-2 overflow-x-auto pb-3 mb-6 no-scrollbar"
+                        id="category-filter-pills">
+                        <button onclick="setCategoryFilter('All')"
+                            class="category-pill active-pill px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-brand-600 text-white shadow-sm transition-all"
+                            data-category="All">All Categories</button>
+                        <button onclick="setCategoryFilter('Technical')"
+                            class="category-pill px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-white text-slate-600 border border-slate-200 hover:border-brand-300 hover:text-brand-600 transition-all"
+                            data-category="Technical">Technical</button>
+                        <button onclick="setCategoryFilter('Cultural')"
+                            class="category-pill px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-white text-slate-600 border border-slate-200 hover:border-brand-300 hover:text-brand-600 transition-all"
+                            data-category="Cultural">Cultural</button>
+                        <button onclick="setCategoryFilter('Workshop')"
+                            class="category-pill px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-white text-slate-600 border border-slate-200 hover:border-brand-300 hover:text-brand-600 transition-all"
+                            data-category="Workshop">Workshop</button>
+                        <button onclick="setCategoryFilter('Hackathon')"
+                            class="category-pill px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-white text-slate-600 border border-slate-200 hover:border-brand-300 hover:text-brand-600 transition-all"
+                            data-category="Hackathon">Hackathon</button>
+                        <button onclick="setCategoryFilter('Sports')"
+                            class="category-pill px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-white text-slate-600 border border-slate-200 hover:border-brand-300 hover:text-brand-600 transition-all"
+                            data-category="Sports">Sports &amp; Gaming</button>
+                    </div>
+
+                    <!-- Events Grid -->
+                    <div id="events-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Dynamically populated -->
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="events-empty-state"
+                        class="hidden text-center py-16 bg-white rounded-2xl border border-dashed border-slate-300 p-8">
+                        <div
+                            class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-400 mb-3">
+                            <i data-lucide="calendar-x" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-base font-semibold text-slate-900">No events matched your search</h3>
+                        <p class="text-sm text-slate-500 mt-1 max-w-sm mx-auto">Try clearing your search query or
+                            picking another event category tag above.</p>
+                        <button onclick="resetFilters()"
+                            class="mt-4 px-4 py-2 text-xs font-semibold text-brand-600 bg-brand-50 rounded-lg hover:bg-brand-100 transition-all">Clear
+                            Filters</button>
+                    </div>
+
+                </div>
+            </section>
+
+            <section id="about" class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div
+                    class="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-3xl p-8 sm:p-12 text-white shadow-xl relative overflow-hidden">
+                    <div class="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <span class="text-xs uppercase font-bold tracking-widest text-brand-400">About Our
+                                Community</span>
+                            <h2 class="text-2xl sm:text-4xl font-display font-bold mt-2">Empowering Student Leaders
+                                &amp; Creators</h2>
+                            <p class="mt-4 text-slate-300 text-sm sm:text-base leading-relaxed">
+                                Nexus Club is the largest officially recognized student organization on campus. We
+                                bridge the gap between classroom theory and real-world execution with hackathons, guest
+                                lectures from industry pioneers, acoustic nights, and hands-on developer tracks.
+                            </p>
+
+                            <div class="mt-6 flex flex-wrap gap-4 text-xs">
+                                <div
+                                    class="flex items-center gap-2 bg-white/10 px-3.5 py-2 rounded-xl backdrop-blur-sm">
+                                    <i data-lucide="award" class="w-4 h-4 text-amber-400"></i>
+                                    <span>Official Dean Accreditation</span>
+                                </div>
+                                <div
+                                    class="flex items-center gap-2 bg-white/10 px-3.5 py-2 rounded-xl backdrop-blur-sm">
+                                    <i data-lucide="users" class="w-4 h-4 text-sky-400"></i>
+                                    <span>3,000+ Alumni Network</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/10">
+                                <div
+                                    class="w-10 h-10 rounded-xl bg-brand-500/30 flex items-center justify-center text-brand-300 mb-3">
+                                    <i data-lucide="code-2" class="w-5 h-5"></i>
+                                </div>
+                                <h4 class="font-semibold text-sm">Tech &amp; Dev Wings</h4>
+                                <p class="text-xs text-slate-300 mt-1">Open source bootcamps, AI hack nights, robotics
+                                    test beds.</p>
+                            </div>
+
+                            <div class="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/10">
+                                <div
+                                    class="w-10 h-10 rounded-xl bg-pink-500/30 flex items-center justify-center text-pink-300 mb-3">
+                                    <i data-lucide="music" class="w-5 h-5"></i>
+                                </div>
+                                <h4 class="font-semibold text-sm">Arts &amp; Media</h4>
+                                <p class="text-xs text-slate-300 mt-1">Battle of bands, photography walks, theatre
+                                    workshops.</p>
+                            </div>
+
+                            <div class="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/10">
+                                <div
+                                    class="w-10 h-10 rounded-xl bg-emerald-500/30 flex items-center justify-center text-emerald-300 mb-3">
+                                    <i data-lucide="briefcase" class="w-5 h-5"></i>
+                                </div>
+                                <h4 class="font-semibold text-sm">Career &amp; Mentorship</h4>
+                                <p class="text-xs text-slate-300 mt-1">Resume reviews, FAANG mock interviews, networking
+                                    mixers.</p>
+                            </div>
+
+                            <div class="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/10">
+                                <div
+                                    class="w-10 h-10 rounded-xl bg-amber-500/30 flex items-center justify-center text-amber-300 mb-3">
+                                    <i data-lucide="trophy" class="w-5 h-5"></i>
+                                </div>
+                                <h4 class="font-semibold text-sm">Esports &amp; Sports</h4>
+                                <p class="text-xs text-slate-300 mt-1">Inter-college LAN wars, chess arenas, futsal
+                                    challenges.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- ========================================== -->
+        <!-- 2. ADMIN DASHBOARD VIEW                    -->
+        <!-- ========================================== -->
+        <div id="admin-view" class="hidden py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- Admin Top bar / Header -->
+            <div
+                class="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-slate-200 gap-4">
+                <div>
+                    <div
+                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-purple-50 text-purple-700 text-xs font-semibold mb-2">
+                        <i data-lucide="shield" class="w-3.5 h-3.5"></i> Admin Control Panel
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl font-display font-bold text-slate-900">Club Operations &amp;
+                        Registrations</h1>
+                    <p class="text-sm text-slate-500 mt-1">Oversee scheduled club events, view student rosters, and
+                        manage capacity.</p>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button onclick="openAddEventModal()"
+                        class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all flex items-center gap-2">
+                        <i data-lucide="calendar-plus" class="w-4 h-4"></i>
+                        <span>Add New Event</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 my-8">
+
+                <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600">
+                        <i data-lucide="calendar" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-display font-bold text-slate-900" id="kpi-total-events">0</div>
+                        <div class="text-xs font-medium text-slate-500">Total Events Managed</div>
+                    </div>
+                </div>
+
+                <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                        <i data-lucide="user-check" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-display font-bold text-slate-900" id="kpi-total-registrations">0</div>
+                        <div class="text-xs font-medium text-slate-500">Student Registrations</div>
+                    </div>
+                </div>
+
+                <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
+                        <i data-lucide="clock" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-display font-bold text-slate-900" id="kpi-upcoming-events">0</div>
+                        <div class="text-xs font-medium text-slate-500">Upcoming Live</div>
+                    </div>
+                </div>
+
+                <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
+                        <i data-lucide="layers" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-display font-bold text-slate-900" id="kpi-categories-count">5</div>
+                        <div class="text-xs font-medium text-slate-500">Active Categories</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="border-b border-slate-200 mb-6">
+                <nav class="flex space-x-8 text-sm font-medium">
+                    <button id="admin-tab-events-btn" onclick="switchAdminTab('events')"
+                        class="border-b-2 border-brand-600 py-3 text-brand-600 flex items-center gap-2 font-semibold">
+                        <i data-lucide="calendar" class="w-4 h-4"></i>
+                        <span>Events Directory</span>
+                    </button>
+                    <button id="admin-tab-attendees-btn" onclick="switchAdminTab('attendees')"
+                        class="border-b-2 border-transparent py-3 text-slate-500 hover:text-slate-800 flex items-center gap-2">
+                        <i data-lucide="users" class="w-4 h-4"></i>
+                        <span>Student Registrations (<span id="attendee-badge-count">0</span>)</span>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Tab A: Events Management Table -->
+            <div id="admin-panel-events" class="space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+                    <div class="relative w-full sm:w-80">
+                        <i data-lucide="search"
+                            class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                        <input type="text" id="admin-event-search" oninput="renderAdminEventsTable()"
+                            placeholder="Search by event title or category..."
+                            class="w-full pl-9 pr-4 py-2 bg-white rounded-xl border border-slate-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <span class="text-xs text-slate-500">Live persistence with LocalStorage</span>
+                </div>
+
+                <div class="overflow-x-auto bg-white rounded-2xl border border-slate-200 shadow-sm">
+                    <table class="w-full text-left text-sm text-slate-600">
+                        <thead
+                            class="bg-slate-50 text-xs uppercase font-semibold text-slate-500 border-b border-slate-200">
+                            <tr>
+                                <th class="px-6 py-4">Event Details</th>
+                                <th class="px-6 py-4">Category</th>
+                                <th class="px-6 py-4">Date &amp; Time</th>
+                                <th class="px-6 py-4">Venue</th>
+                                <th class="px-6 py-4">Capacity / Booked</th>
+                                <th class="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-events-tbody" class="divide-y divide-slate-100">
+                            <!-- Dynamically populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab B: Student Registrations Table -->
+            <div id="admin-panel-attendees" class="hidden space-y-4">
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                    <div class="flex flex-1 flex-col sm:flex-row gap-3">
+                        <div class="relative flex-1 max-w-sm">
+                            <i data-lucide="search"
+                                class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                            <input type="text" id="admin-attendee-search" oninput="renderAdminAttendeesTable()"
+                                placeholder="Search by student, email, or college..."
+                                class="w-full pl-9 pr-4 py-2 bg-white rounded-xl border border-slate-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        </div>
+
+                        <select id="attendee-event-filter" onchange="renderAdminAttendeesTable()"
+                            class="px-3 py-2 bg-white rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="ALL">All Registered Events</option>
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+
+                    <button onclick="exportRegistrationsCSV()"
+                        class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                        <span>Export CSV</span>
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto bg-white rounded-2xl border border-slate-200 shadow-sm">
+                    <table class="w-full text-left text-sm text-slate-600">
+                        <thead
+                            class="bg-slate-50 text-xs uppercase font-semibold text-slate-500 border-b border-slate-200">
+                            <tr>
+                                <th class="px-6 py-4">Attendee</th>
+                                <th class="px-6 py-4">Event Name</th>
+                                <th class="px-6 py-4">College / Dept &amp; Year</th>
+                                <th class="px-6 py-4">Phone</th>
+                                <th class="px-6 py-4">Reg Date</th>
+                                <th class="px-6 py-4">Status</th>
+                                <th class="px-6 py-4 text-right">Check-In</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-attendees-tbody" class="divide-y divide-slate-100">
+                            <!-- Dynamically populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- MODAL: Student Registration Form -->
+    <div id="modal-registration"
+        class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div
+            class="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-100 p-6 sm:p-8 my-8 transition-all transform animate-in fade-in zoom-in-95">
+
+            <!-- Close Button -->
+            <button onclick="closeModal('modal-registration')"
+                class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 p-1.5 rounded-full hover:bg-slate-100 transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+                    <i data-lucide="ticket" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-display font-bold text-slate-900">Event Registration</h3>
+                    <p id="reg-modal-event-title"
+                        class="text-xs font-semibold text-brand-600 truncate max-w-xs sm:max-w-sm">Event Name</p>
+                </div>
+            </div>
+
+            <div id="reg-modal-event-details-bar"
+                class="mb-5 p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs flex flex-wrap items-center justify-between gap-2 text-slate-600">
+                <span id="reg-modal-time" class="flex items-center gap-1.5"><i data-lucide="calendar"
+                        class="w-3.5 h-3.5 text-slate-400"></i> Date &amp; Time</span>
+                <span id="reg-modal-venue" class="flex items-center gap-1.5"><i data-lucide="map-pin"
+                        class="w-3.5 h-3.5 text-slate-400"></i> Venue</span>
+                <span id="reg-modal-spots" class="font-bold text-emerald-600">-- Spots Remaining</span>
+            </div>
+
+            <form id="event-registration-form" onsubmit="handleRegistrationSubmit(event)" class="space-y-4">
+                <input type="hidden" id="reg-event-id" value="">
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Full Student Name <span
+                            class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <i data-lucide="user"
+                            class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                        <input type="text" id="reg-name" required placeholder="e.g. Alex Henderson"
+                            class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Student University Email <span
+                            class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <i data-lucide="mail"
+                            class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                        <input type="email" id="reg-email" required placeholder="alex.h@college.edu"
+                            class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">College / Dept &amp; Year <span
+                                class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <i data-lucide="building"
+                                class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                            <input type="text" id="reg-college-year" required placeholder="Computer Science, 3rd Yr"
+                                class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Phone Number <span
+                                class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <i data-lucide="phone"
+                                class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                            <input type="tel" id="reg-phone" required pattern="[0-9+ \-]{8,15}"
+                                placeholder="+1 (555) 019-2831"
+                                class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Special Requirements / Notes
+                        (Optional)</label>
+                    <textarea id="reg-notes" rows="2"
+                        placeholder="Dietary restrictions, laptop requirements, or team name..."
+                        class="w-full p-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" id="btn-submit-reg"
+                        class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-sm shadow-md shadow-brand-500/20 transition-all flex items-center justify-center gap-2">
+                        <span>Confirm &amp; Generate Ticket</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Registration Confirmation Ticket -->
+    <div id="modal-ticket"
+        class="fixed inset-0 z-50 hidden bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+        <div
+            class="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 my-8">
+
+            <!-- Top header bar with Confetti color -->
+            <div class="bg-gradient-to-r from-brand-600 to-indigo-700 p-6 text-white text-center relative">
+                <button onclick="closeModal('modal-ticket')"
+                    class="absolute top-4 right-4 text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+                <div
+                    class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-2 backdrop-blur-sm">
+                    <i data-lucide="check" class="w-6 h-6 text-white stroke-[3]"></i>
+                </div>
+                <h3 class="text-xl font-display font-bold">Registration Confirmed!</h3>
+                <p class="text-xs text-white/80 mt-1">Present this digital ticket at the entrance check-in desk</p>
+            </div>
+
+            <!-- Ticket Body -->
+            <div class="p-6 space-y-4">
+
+                <div class="border-b border-dashed border-slate-200 pb-4">
+                    <span class="text-xs uppercase font-bold tracking-wider text-brand-600"
+                        id="ticket-category">Category</span>
+                    <h4 class="text-lg font-bold text-slate-900 mt-0.5" id="ticket-event-title">Event Title</h4>
+                    <p class="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
+                        <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                        <span id="ticket-datetime">Date &amp; Time</span>
+                    </p>
+                    <p class="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
+                        <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                        <span id="ticket-venue">Venue Name</span>
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                        <span class="text-slate-400 block font-medium">Attendee Name</span>
+                        <span class="font-bold text-slate-800" id="ticket-name">Alex Henderson</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block font-medium">Ticket ID</span>
+                        <span class="font-mono font-bold text-brand-600" id="ticket-code">NX-9012</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block font-medium">College / Dept</span>
+                        <span class="font-semibold text-slate-800" id="ticket-dept">CS Year 3</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block font-medium">Status</span>
+                        <span class="inline-flex items-center text-emerald-600 font-bold gap-1">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Confirmed
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Simulated SVG QR Code -->
+                <div
+                    class="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex flex-col items-center justify-center">
+                    <svg class="w-28 h-28 text-slate-800" viewBox="0 0 100 100" fill="currentColor">
+                        <!-- QR pattern imitation for aesthetics -->
+                        <rect x="10" y="10" width="25" height="25" rx="3" fill="#1e1b4b" />
+                        <rect x="15" y="15" width="15" height="15" fill="#ffffff" />
+                        <rect x="18" y="18" width="9" height="9" fill="#1e1b4b" />
+
+                        <rect x="65" y="10" width="25" height="25" rx="3" fill="#1e1b4b" />
+                        <rect x="70" y="15" width="15" height="15" fill="#ffffff" />
+                        <rect x="73" y="18" width="9" height="9" fill="#1e1b4b" />
+
+                        <rect x="10" y="65" width="25" height="25" rx="3" fill="#1e1b4b" />
+                        <rect x="15" y="70" width="15" height="15" fill="#ffffff" />
+                        <rect x="18" y="73" width="9" height="9" fill="#1e1b4b" />
+
+                        <rect x="42" y="12" width="6" height="14" fill="#4f46e5" />
+                        <rect x="52" y="18" width="6" height="6" fill="#1e1b4b" />
+                        <rect x="42" y="32" width="16" height="6" fill="#1e1b4b" />
+                        <rect x="42" y="44" width="8" height="8" fill="#ec4899" />
+                        <rect x="12" y="44" width="18" height="6" fill="#1e1b4b" />
+                        <rect x="65" y="44" width="22" height="6" fill="#1e1b4b" />
+                        <rect x="65" y="56" width="10" height="12" fill="#4f46e5" />
+                        <rect x="80" y="62" width="10" height="6" fill="#1e1b4b" />
+                        <rect x="42" y="60" width="16" height="16" fill="#1e1b4b" />
+                        <rect x="46" y="80" width="8" height="10" fill="#4f46e5" />
+                        <rect x="62" y="76" width="18" height="8" fill="#1e1b4b" />
+                    </svg>
+                    <span class="text-[10px] font-mono text-slate-400 mt-2">Scan at venue door via Nexus Scanner</span>
+                </div>
+
+            </div>
+
+            <!-- Footer Buttons -->
+            <div class="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
+                <button onclick="window.print()"
+                    class="flex-1 py-2.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5">
+                    <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                    <span>Print Pass</span>
+                </button>
+                <button onclick="closeModal('modal-ticket')"
+                    class="flex-1 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors">
+                    Done
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="modal-event-editor"
+        class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div
+            class="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-100 p-6 sm:p-8 my-8 transition-all">
+
+            <button onclick="closeModal('modal-event-editor')"
+                class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 p-1.5 rounded-full hover:bg-slate-100 transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                    <i data-lucide="calendar" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-display font-bold text-slate-900" id="editor-modal-title">Create New Event
+                    </h3>
+                    <p class="text-xs text-slate-500">Add or modify event details for the college club website.</p>
+                </div>
+            </div>
+
+            <form id="event-editor-form" onsubmit="handleSaveEvent(event)" class="space-y-4">
+                <input type="hidden" id="editor-event-id" value="">
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Event Title <span
+                            class="text-red-500">*</span></label>
+                    <input type="text" id="editor-title" required placeholder="e.g. Nexus Annual Hackathon 2026"
+                        class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Category <span
+                                class="text-red-500">*</span></label>
+                        <select id="editor-category" required
+                            class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none bg-white">
+                            <option value="Technical">Technical</option>
+                            <option value="Hackathon">Hackathon</option>
+                            <option value="Workshop">Workshop</option>
+                            <option value="Cultural">Cultural</option>
+                            <option value="Sports">Sports</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Max Capacity (Seats) <span
+                                class="text-red-500">*</span></label>
+                        <input type="number" id="editor-seats" min="5" max="2000" required placeholder="100"
+                            class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Date <span
+                                class="text-red-500">*</span></label>
+                        <input type="date" id="editor-date" required
+                            class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Time (e.g. 5:00 PM - 8:00 PM)
+                            <span class="text-red-500">*</span></label>
+                        <input type="text" id="editor-time" required placeholder="10:00 AM - 4:00 PM"
+                            class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Venue / Campus Location <span
+                            class="text-red-500">*</span></label>
+                    <input type="text" id="editor-venue" required placeholder="Auditorium Hall B / Tech Lab 4"
+                        class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Cover Image URL (Unsplash or direct
+                        image)</label>
+                    <input type="url" id="editor-image" placeholder="https://images.unsplash.com/photo-..."
+                        class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Event Description <span
+                            class="text-red-500">*</span></label>
+                    <textarea id="editor-desc" rows="3" required
+                        placeholder="Provide a brief overview of topics, mentors, guidelines, prerequisites..."
+                        class="w-full p-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="editor-featured"
+                        class="w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-500">
+                    <label for="editor-featured" class="text-xs font-semibold text-slate-700 cursor-pointer">Mark as
+                        Featured Event (Spotlight banner)</label>
+                </div>
+
+                <div class="pt-3 flex justify-end gap-3">
+                    <button type="button" onclick="closeModal('modal-event-editor')"
+                        class="px-4 py-2.5 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
+                    <button type="submit"
+                        class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        <span id="editor-save-btn-text">Save Event</span>
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast"
+        class="fixed bottom-5 right-5 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-3 px-4 py-3 bg-slate-900 text-white rounded-2xl shadow-xl text-sm max-w-sm">
+        <div id="toast-icon" class="text-emerald-400">
+            <i data-lucide="check-circle" class="w-5 h-5"></i>
+        </div>
+        <span id="toast-msg">Action performed successfully</span>
+    </div>
+
+    <footer class="bg-white border-t border-slate-200 mt-auto py-8">
+        <div
+            class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+            <div class="flex items-center space-x-2">
+                <span class="font-display font-bold text-slate-800">NEXUS CLUB &copy; 2026</span>
+                <span>• Student Affairs &amp; Technology Council</span>
+            </div>
+            <div class="flex items-center space-x-6">
+                <a href="#events" class="hover:text-slate-900 transition-colors">Event Calendar</a>
+                <a href="#about" class="hover:text-slate-900 transition-colors">Code of Conduct</a>
+                <button onclick="switchView('admin')" class="hover:text-brand-600 font-semibold transition-colors">Admin
+                    Login</button>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initial sample dataset
+        const DEFAULT_EVENTS = [
+            {
+                id: "evt-101",
+                title: "HackNexus 2026: 36-Hour National Hackathon",
+                category: "Hackathon",
+                date: "2026-10-14",
+                time: "09:00 AM - 09:00 PM (36h)",
+                venue: "Innovation Hub & Main Auditorium",
+                image: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80",
+                description: "Join over 500 collegiate hackers to build AI, Web3, and IoT solutions. Mentors from top tech giants, $10,000 prize pool, free meals and gear.",
+                totalSeats: 350,
+                registeredCount: 312,
+                isFeatured: true
+            },
+            {
+                id: "evt-102",
+                title: "Full-Stack AI Agents Masterclass",
+                category: "Workshop",
+                date: "2026-10-18",
+                time: "02:00 PM - 06:00 PM",
+                venue: "Tech Lab Block C, Room 302",
+                image: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1000&q=80",
+                description: "Hands-on architectural guide to building autonomous multi-agent systems using LangChain, vector DBs, and local inference models.",
+                totalSeats: 60,
+                registeredCount: 48,
+                isFeatured: false
+            },
+            {
+                id: "evt-103",
+                title: "Echoes: Acoustic Indie & Rock Night",
+                category: "Cultural",
+                date: "2026-10-22",
+                time: "06:30 PM - 10:30 PM",
+                venue: "Open Air Amphitheatre",
+                image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1000&q=80",
+                description: "An open starlit evening featuring 8 student bands, spoken poetry acts, artisan coffee stands, and interactive music jam corners.",
+                totalSeats: 500,
+                registeredCount: 410,
+                isFeatured: false
+            },
+            {
+                id: "evt-104",
+                title: "Algorithmic Trading & Quantitative Finance",
+                category: "Technical",
+                date: "2026-10-25",
+                time: "04:00 PM - 07:00 PM",
+                venue: "Management Seminar Hall 1",
+                image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1000&q=80",
+                description: "Learn how hedge funds and automated market makers construct high-frequency backtesting pipelines in Python with guest quant traders.",
+                totalSeats: 120,
+                registeredCount: 95,
+                isFeatured: false
+            },
+            {
+                id: "evt-105",
+                title: "Campus Valorant & Smash Bros Tournament",
+                category: "Sports",
+                date: "2026-10-29",
+                time: "11:00 AM - 08:00 PM",
+                venue: "Recreation Center E-Arena",
+                image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1000&q=80",
+                description: "High-octane esports faceoff. 5v5 bracket for Valorant and 1v1 double elimination for Super Smash Bros Ultimate with live stream casting.",
+                totalSeats: 160,
+                registeredCount: 152,
+                isFeatured: false
+            },
+            {
+                id: "evt-106",
+                title: "UI/UX Design Sprint & Figma Jam",
+                category: "Workshop",
+                date: "2026-11-04",
+                time: "01:00 PM - 05:00 PM",
+                venue: "Design Studio 2, Art Wing",
+                image: "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?auto=format&fit=crop&w=1000&q=80",
+                description: "Sprint through user testing, design systems, auto-layout tokens, and wireframing rapid prototypes under mentorship of senior product designers.",
+                totalSeats: 50,
+                registeredCount: 38,
+                isFeatured: false
+            }
+        ];
+
+        const DEFAULT_REGISTRATIONS = [
+            {
+                id: "REG-801",
+                eventId: "evt-101",
+                eventName: "HackNexus 2026: 36-Hour National Hackathon",
+                name: "Devon Vance",
+                email: "d.vance@stanford.edu",
+                collegeYear: "CS, Year 3",
+                phone: "+1 555-019-4829",
+                notes: "Need vegetarian food option",
+                regDate: "2026-09-28",
+                checkedIn: true
+            },
+            {
+                id: "REG-802",
+                eventId: "evt-101",
+                eventName: "HackNexus 2026: 36-Hour National Hackathon",
+                name: "Priya Sharma",
+                email: "priya.sharma@tech.edu",
+                collegeYear: "ECE, Year 2",
+                phone: "+1 555-012-9843",
+                notes: "Team: BinaryBeasts",
+                regDate: "2026-09-29",
+                checkedIn: false
+            },
+            {
+                id: "REG-803",
+                eventId: "evt-102",
+                eventName: "Full-Stack AI Agents Masterclass",
+                name: "Marcus Aurelius Lee",
+                email: "m.lee@college.edu",
+                collegeYear: "Data Science, Year 4",
+                phone: "+1 555-018-3321",
+                notes: "Bringing M2 MacBook Pro",
+                regDate: "2026-09-30",
+                checkedIn: false
+            }
+        ];
+
+        // LocalStorage Keys
+        const LS_EVENTS_KEY = "nexus_events_data_v1";
+        const LS_REGS_KEY = "nexus_registrations_data_v1";
+
+        let events = [];
+        let registrations = [];
+        let currentCategory = "All";
+        let searchQuery = "";
+        let activeView = "student"; // 'student' or 'admin'
+
+        function initializeApp() {
+            // Load events
+            const storedEvents = localStorage.getItem(LS_EVENTS_KEY);
+            if (storedEvents) {
+                try {
+                    events = JSON.parse(storedEvents);
+                } catch (e) {
+                    events = DEFAULT_EVENTS;
+                }
+            } else {
+                events = DEFAULT_EVENTS;
+                saveEvents();
+            }
+
+            // Load registrations
+            const storedRegs = localStorage.getItem(LS_REGS_KEY);
+            if (storedRegs) {
+                try {
+                    registrations = JSON.parse(storedRegs);
+                } catch (e) {
+                    registrations = DEFAULT_REGISTRATIONS;
+                }
+            } else {
+                registrations = DEFAULT_REGISTRATIONS;
+                saveRegistrations();
+            }
+
+            // Render views
+            renderStudentCatalog();
+            renderFeaturedEvent();
+            renderAdminDashboard();
+            updateGlobalStats();
+
+            // Initialize Lucide Icons
+            lucide.createIcons();
+        }
+
+        function saveEvents() {
+            localStorage.setItem(LS_EVENTS_KEY, JSON.stringify(events));
+        }
+
+        function saveRegistrations() {
+            localStorage.setItem(LS_REGS_KEY, JSON.stringify(registrations));
+        }
+
+        function switchView(viewName) {
+            activeView = viewName;
+            const studentView = document.getElementById("student-view");
+            const adminView = document.getElementById("admin-view");
+            const studentNav = document.getElementById("student-nav-links");
+            const quickCreateBtn = document.getElementById("quick-create-btn");
+
+            const btnStudent = document.getElementById("btn-view-student");
+            const btnAdmin = document.getElementById("btn-view-admin");
+
+            if (viewName === "student") {
+                studentView.classList.remove("hidden");
+                adminView.classList.add("hidden");
+                studentNav.classList.remove("hidden");
+                studentNav.classList.add("md:flex");
+                quickCreateBtn.classList.add("hidden");
+
+                btnStudent.className = "px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all bg-white text-slate-900 shadow-sm";
+                btnAdmin.className = "px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 text-slate-500 hover:text-slate-900 transition-all";
+
+                renderStudentCatalog();
+                renderFeaturedEvent();
+            } else {
+                studentView.classList.add("hidden");
+                adminView.classList.remove("hidden");
+                studentNav.classList.add("hidden");
+                studentNav.classList.remove("md:flex");
+                quickCreateBtn.classList.remove("hidden");
+
+                btnAdmin.className = "px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all bg-white text-slate-900 shadow-sm";
+                btnStudent.className = "px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 text-slate-500 hover:text-slate-900 transition-all";
+
+                renderAdminDashboard();
+            }
+            lucide.createIcons();
+        }
+
+        function showToast(message, type = "success") {
+            const toast = document.getElementById("toast");
+            const toastMsg = document.getElementById("toast-msg");
+            const toastIcon = document.getElementById("toast-icon");
+
+            toastMsg.innerText = message;
+            if (type === "error") {
+                toastIcon.className = "text-red-400";
+                toastIcon.innerHTML = `<i data-lucide="alert-circle" class="w-5 h-5"></i>`;
+            } else {
+                toastIcon.className = "text-emerald-400";
+                toastIcon.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5"></i>`;
+            }
+
+            lucide.createIcons();
+            toast.classList.remove("translate-y-24", "opacity-0", "pointer-events-none");
+
+            setTimeout(() => {
+                toast.classList.add("translate-y-24", "opacity-0", "pointer-events-none");
+            }, 3500);
+        }
+
+        function openModal(modalId) {
+            const el = document.getElementById(modalId);
+            if (el) el.classList.remove("hidden");
+            lucide.createIcons();
+        }
+
+        function closeModal(modalId) {
+            const el = document.getElementById(modalId);
+            if (el) el.classList.add("hidden");
+        }
+
+        function renderFeaturedEvent() {
+            const container = document.getElementById("featured-event-container");
+            // Pick first marked featured or the first available
+            const featured = events.find(e => e.isFeatured) || events[0];
+
+            if (!featured) {
+                container.innerHTML = `<div class="p-8 text-center text-slate-400">No events currently scheduled.</div>`;
+                return;
+            }
+
+            const spotsLeft = Math.max(0, featured.totalSeats - (featured.registeredCount || 0));
+            const percentage = Math.min(100, Math.round(((featured.registeredCount || 0) / featured.totalSeats) * 100));
+
+            container.innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-12">
+          <!-- Left Visual Image with Overlay -->
+          <div class="relative lg:col-span-6 h-64 lg:h-auto min-h-[280px]">
+            <img src="${featured.image}" alt="${featured.title}" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-slate-900/90 via-slate-900/50 to-transparent"></div>
+            <div class="absolute top-4 left-4">
+              <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-accent-500 text-white shadow-lg">
+                ${featured.category}
+              </span>
+            </div>
+          </div>
+
+          <!-- Right Details -->
+          <div class="lg:col-span-6 p-6 sm:p-10 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2 text-xs text-brand-300 font-semibold mb-2">
+                <i data-lucide="sparkles" class="w-4 h-4"></i>
+                <span>FLAGSHIP CAMPUS EVENT</span>
+              </div>
+              <h3 class="text-2xl sm:text-3xl font-display font-extrabold text-white leading-snug">${featured.title}</h3>
+              <p class="mt-3 text-slate-300 text-xs sm:text-sm line-clamp-3 leading-relaxed">${featured.description}</p>
+              
+              <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-200">
+                <div class="flex items-center gap-2">
+                  <div class="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-brand-300">
+                    <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                  </div>
+                  <div>
+                    <span class="text-slate-400 block text-[10px]">DATE &amp; TIME</span>
+                    <span>${formatDateString(featured.date)} • ${featured.time}</span>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <div class="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-brand-300">
+                    <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                  </div>
+                  <div>
+                    <span class="text-slate-400 block text-[10px]">VENUE</span>
+                    <span>${featured.venue}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Capacity bar -->
+              <div class="mt-6">
+                <div class="flex justify-between text-xs font-semibold mb-1.5">
+                  <span class="text-slate-300">Registration Capacity</span>
+                  <span class="${spotsLeft < 20 ? 'text-amber-400 font-bold' : 'text-slate-300'}">${spotsLeft} spots remaining (${percentage}%)</span>
+                </div>
+                <div class="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-brand-500 to-accent-500 rounded-full" style="width: ${percentage}%"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-slate-800 flex flex-wrap items-center justify-between gap-4">
+              <div class="text-xs text-slate-400">
+                <span>Free Entry</span> • <span>Open to All Departments</span>
+              </div>
+              <button 
+                onclick="openRegistrationModal('${featured.id}')"
+                ${spotsLeft <= 0 ? 'disabled' : ''}
+                class="px-6 py-2.5 rounded-xl ${spotsLeft <= 0 ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-brand-600 hover:bg-brand-500 text-white shadow-lg shadow-brand-600/30'} text-xs font-bold transition-all flex items-center gap-2"
+              >
+                <i data-lucide="ticket" class="w-4 h-4"></i>
+                <span>${spotsLeft <= 0 ? 'Fully Booked' : 'Reserve Spot Now'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+            lucide.createIcons();
+        }
+
+        function setCategoryFilter(category) {
+            currentCategory = category;
+            const pills = document.querySelectorAll(".category-pill");
+            pills.forEach(pill => {
+                if (pill.getAttribute("data-category") === category) {
+                    pill.className = "category-pill active-pill px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-brand-600 text-white shadow-sm transition-all";
+                } else {
+                    pill.className = "category-pill px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-white text-slate-600 border border-slate-200 hover:border-brand-300 hover:text-brand-600 transition-all";
+                }
+            });
+            renderStudentCatalog();
+        }
+
+        function handleSearchFilterChange() {
+            searchQuery = document.getElementById("event-search-input").value.toLowerCase().trim();
+            renderStudentCatalog();
+        }
+
+        function resetFilters() {
+            searchQuery = "";
+            document.getElementById("event-search-input").value = "";
+            setCategoryFilter("All");
+        }
+
+        function renderStudentCatalog() {
+            const grid = document.getElementById("events-grid");
+            const emptyState = document.getElementById("events-empty-state");
+
+            const filtered = events.filter(evt => {
+                const matchesCategory = currentCategory === "All" || evt.category === currentCategory;
+                const matchesQuery = !searchQuery ||
+                    evt.title.toLowerCase().includes(searchQuery) ||
+                    evt.venue.toLowerCase().includes(searchQuery) ||
+                    evt.description.toLowerCase().includes(searchQuery);
+                return matchesCategory && matchesQuery;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = "";
+                emptyState.classList.remove("hidden");
+                return;
+            }
+
+            emptyState.classList.add("hidden");
+
+            grid.innerHTML = filtered.map(evt => {
+                const spotsLeft = Math.max(0, evt.totalSeats - (evt.registeredCount || 0));
+                const isSoldOut = spotsLeft <= 0;
+                const categoryColor = getCategoryBadgeStyle(evt.category);
+
+                return `
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col overflow-hidden group">
+            <!-- Image Header -->
+            <div class="relative h-44 w-full overflow-hidden bg-slate-100">
+              <img 
+                src="${evt.image || 'https://placehold.co/600x400/e2e8f0/475569?text=Event'}" 
+                alt="${evt.title}"
+                onerror="this.src='https://placehold.co/600x400/e2e8f0/475569?text=Nexus+Event'" 
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              >
+              <div class="absolute top-3 left-3 flex gap-2">
+                <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold tracking-wide uppercase shadow-sm ${categoryColor}">
+                  ${evt.category}
+                </span>
+                ${evt.isFeatured ? '<span class="px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-slate-900/80 text-white backdrop-blur-sm">Featured</span>' : ''}
+              </div>
+
+              <div class="absolute bottom-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-lg text-xs font-bold text-slate-800 shadow-sm flex items-center gap-1">
+                <i data-lucide="users" class="w-3.5 h-3.5 text-brand-600"></i>
+                <span>${spotsLeft} Left</span>
+              </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="p-5 flex-1 flex flex-col justify-between">
+              <div>
+                <h3 class="font-display font-bold text-slate-900 text-lg group-hover:text-brand-600 transition-colors line-clamp-1">${evt.title}</h3>
+                
+                <p class="text-xs text-slate-500 mt-2 line-clamp-2 leading-relaxed">${evt.description}</p>
+                
+                <div class="mt-4 space-y-2 border-t border-slate-100 pt-3 text-xs text-slate-600">
+                  <div class="flex items-center gap-2">
+                    <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
+                    <span class="font-medium truncate">${formatDateString(evt.date)} • ${evt.time}</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
+                    <span class="font-medium truncate">${evt.venue}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
+                <div class="text-[11px] text-slate-500 font-medium">
+                  ${isSoldOut ? '<span class="text-red-600 font-bold">Housefull</span>' : '<span>Free Student Pass</span>'}
+                </div>
+
+                <button 
+                  onclick="openRegistrationModal('${evt.id}')"
+                  ${isSoldOut ? 'disabled' : ''}
+                  class="px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${isSoldOut
+                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                        : 'bg-brand-50 hover:bg-brand-600 text-brand-600 hover:text-white border border-brand-200 hover:border-transparent'
+                    }"
+                >
+                  <i data-lucide="ticket" class="w-3.5 h-3.5"></i>
+                  <span>${isSoldOut ? 'Closed' : 'Register Now'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+            }).join("");
+
+            lucide.createIcons();
+        }
+
+        function openRegistrationModal(eventId) {
+            const evt = events.find(e => e.id === eventId);
+            if (!evt) return;
+
+            const spotsLeft = Math.max(0, evt.totalSeats - (evt.registeredCount || 0));
+            if (spotsLeft <= 0) {
+                showToast("Sorry, this event has reached full capacity!", "error");
+                return;
+            }
+
+            document.getElementById("reg-event-id").value = evt.id;
+            document.getElementById("reg-modal-event-title").innerText = evt.title;
+            document.getElementById("reg-modal-time").innerHTML = `<i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400"></i> ${formatDateString(evt.date)} • ${evt.time}`;
+            document.getElementById("reg-modal-venue").innerHTML = `<i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i> ${evt.venue}`;
+            document.getElementById("reg-modal-spots").innerText = `${spotsLeft} Spots Available`;
+
+            // Clear previous inputs
+            document.getElementById("event-registration-form").reset();
+            openModal("modal-registration");
+            lucide.createIcons();
+        }
+
+        function handleRegistrationSubmit(e) {
+            e.preventDefault();
+            const eventId = document.getElementById("reg-event-id").value;
+            const targetEvent = events.find(evt => evt.id === eventId);
+
+            if (!targetEvent) {
+                showToast("Event not found", "error");
+                return;
+            }
+
+            const spotsLeft = targetEvent.totalSeats - (targetEvent.registeredCount || 0);
+            if (spotsLeft <= 0) {
+                showToast("Registration is now full!", "error");
+                closeModal("modal-registration");
+                return;
+            }
+
+            const name = document.getElementById("reg-name").value.trim();
+            const email = document.getElementById("reg-email").value.trim();
+            const collegeYear = document.getElementById("reg-college-year").value.trim();
+            const phone = document.getElementById("reg-phone").value.trim();
+            const notes = document.getElementById("reg-notes").value.trim();
+
+            // Check if student already registered for this event
+            const duplicate = registrations.find(r => r.eventId === eventId && r.email.toLowerCase() === email.toLowerCase());
+            if (duplicate) {
+                showToast("You are already registered for this event with this email!", "error");
+                return;
+            }
+
+            const regId = "NX-" + Math.floor(1000 + Math.random() * 9000);
+
+            const newRegistration = {
+                id: regId,
+                eventId: targetEvent.id,
+                eventName: targetEvent.title,
+                name: name,
+                email: email,
+                collegeYear: collegeYear,
+                phone: phone,
+                notes: notes,
+                regDate: new Date().toISOString().split("T")[0],
+                checkedIn: false
+            };
+
+            // Update state
+            registrations.unshift(newRegistration);
+            targetEvent.registeredCount = (targetEvent.registeredCount || 0) + 1;
+
+            saveRegistrations();
+            saveEvents();
+
+            // Refresh screens
+            renderStudentCatalog();
+            renderFeaturedEvent();
+            renderAdminDashboard();
+            updateGlobalStats();
+
+            // Close reg form and display ticket
+            closeModal("modal-registration");
+            showConfirmationTicket(newRegistration, targetEvent);
+            showToast("Registered successfully! Your ticket is ready.");
+        }
+
+        function showConfirmationTicket(reg, evt) {
+            document.getElementById("ticket-category").innerText = evt.category;
+            document.getElementById("ticket-event-title").innerText = evt.title;
+            document.getElementById("ticket-datetime").innerText = `${formatDateString(evt.date)} • ${evt.time}`;
+            document.getElementById("ticket-venue").innerText = evt.venue;
+            document.getElementById("ticket-name").innerText = reg.name;
+            document.getElementById("ticket-code").innerText = reg.id;
+            document.getElementById("ticket-dept").innerText = reg.collegeYear;
+
+            openModal("modal-ticket");
+            lucide.createIcons();
+        }
+
+        function renderAdminDashboard() {
+            // Update KPIs
+            document.getElementById("kpi-total-events").innerText = events.length;
+            document.getElementById("kpi-total-registrations").innerText = registrations.length;
+
+            const upcoming = events.filter(e => new Date(e.date) >= new Date(new Date().setHours(0, 0, 0, 0))).length;
+            document.getElementById("kpi-upcoming-events").innerText = upcoming;
+
+            const categoriesSet = new Set(events.map(e => e.category));
+            document.getElementById("kpi-categories-count").innerText = categoriesSet.size;
+
+            document.getElementById("attendee-badge-count").innerText = registrations.length;
+
+            renderAdminEventsTable();
+            renderAdminAttendeesTable();
+            populateAdminEventDropdown();
+        }
+
+        function switchAdminTab(tabName) {
+            const tabEventsBtn = document.getElementById("admin-tab-events-btn");
+            const tabAttendeesBtn = document.getElementById("admin-tab-attendees-btn");
+            const panelEvents = document.getElementById("admin-panel-events");
+            const panelAttendees = document.getElementById("admin-panel-attendees");
+
+            if (tabName === "events") {
+                tabEventsBtn.className = "border-b-2 border-brand-600 py-3 text-brand-600 flex items-center gap-2 font-semibold";
+                tabAttendeesBtn.className = "border-b-2 border-transparent py-3 text-slate-500 hover:text-slate-800 flex items-center gap-2";
+                panelEvents.classList.remove("hidden");
+                panelAttendees.classList.add("hidden");
+            } else {
+                tabAttendeesBtn.className = "border-b-2 border-brand-600 py-3 text-brand-600 flex items-center gap-2 font-semibold";
+                tabEventsBtn.className = "border-b-2 border-transparent py-3 text-slate-500 hover:text-slate-800 flex items-center gap-2";
+                panelAttendees.classList.remove("hidden");
+                panelEvents.classList.add("hidden");
+            }
+            lucide.createIcons();
+        }
+
+        function renderAdminEventsTable() {
+            const tbody = document.getElementById("admin-events-tbody");
+            const search = (document.getElementById("admin-event-search")?.value || "").toLowerCase().trim();
+
+            const filtered = events.filter(e => {
+                return !search || e.title.toLowerCase().includes(search) || e.category.toLowerCase().includes(search) || e.venue.toLowerCase().includes(search);
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">No events found matching your criteria.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(e => {
+                const booked = e.registeredCount || 0;
+                const total = e.totalSeats;
+                const percent = Math.min(100, Math.round((booked / total) * 100));
+
+                return `
+          <tr class="hover:bg-slate-50/80 transition-colors">
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <img src="${e.image}" onerror="this.src='https://placehold.co/100x100/e2e8f0/475569?text=Nexus'" class="w-10 h-10 rounded-xl object-cover border border-slate-200">
+                <div>
+                  <div class="font-semibold text-slate-900 text-xs sm:text-sm flex items-center gap-1.5">
+                    <span>${e.title}</span>
+                    ${e.isFeatured ? '<span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">Featured</span>' : ''}
+                  </div>
+                  <div class="text-[11px] text-slate-400">ID: ${e.id}</div>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4">
+              <span class="px-2.5 py-1 rounded-md text-xs font-semibold ${getCategoryBadgeStyle(e.category)}">
+                ${e.category}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-xs text-slate-700">
+              <div class="font-medium">${formatDateString(e.date)}</div>
+              <div class="text-slate-400">${e.time}</div>
+            </td>
+            <td class="px-6 py-4 text-xs text-slate-700 max-w-[160px] truncate">
+              ${e.venue}
+            </td>
+            <td class="px-6 py-4 text-xs">
+              <div class="flex items-center justify-between text-[11px] mb-1">
+                <span class="font-semibold text-slate-700">${booked} / ${total}</span>
+                <span class="text-slate-400">${percent}%</span>
+              </div>
+              <div class="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                <div class="h-full bg-brand-500 rounded-full" style="width: ${percent}%"></div>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-right whitespace-nowrap">
+              <div class="flex items-center justify-end gap-2">
+                <button onclick="openEditEventModal('${e.id}')" title="Edit Event" class="p-1.5 text-slate-500 hover:text-brand-600 rounded-lg hover:bg-slate-100 transition-colors">
+                  <i data-lucide="edit-3" class="w-4 h-4"></i>
+                </button>
+                <button onclick="confirmDeleteEvent('${e.id}')" title="Delete Event" class="p-1.5 text-slate-500 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+            }).join("");
+
+            lucide.createIcons();
+        }
+
+        function populateAdminEventDropdown() {
+            const dropdown = document.getElementById("attendee-event-filter");
+            if (!dropdown) return;
+            const currentVal = dropdown.value;
+
+            dropdown.innerHTML = `<option value="ALL">All Registered Events</option>` +
+                events.map(e => `<option value="${e.id}">${e.title}</option>`).join("");
+
+            dropdown.value = currentVal || "ALL";
+        }
+
+        function renderAdminAttendeesTable() {
+            const tbody = document.getElementById("admin-attendees-tbody");
+            const search = (document.getElementById("admin-attendee-search")?.value || "").toLowerCase().trim();
+            const selectedEventId = document.getElementById("attendee-event-filter")?.value || "ALL";
+
+            const filtered = registrations.filter(reg => {
+                const matchesEvent = selectedEventId === "ALL" || reg.eventId === selectedEventId;
+                const matchesSearch = !search ||
+                    reg.name.toLowerCase().includes(search) ||
+                    reg.email.toLowerCase().includes(search) ||
+                    reg.collegeYear.toLowerCase().includes(search) ||
+                    reg.eventName.toLowerCase().includes(search) ||
+                    reg.id.toLowerCase().includes(search);
+                return matchesEvent && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-400">No student registrations found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(reg => {
+                return `
+          <tr class="hover:bg-slate-50/80 transition-colors">
+            <td class="px-6 py-3.5">
+              <div class="font-semibold text-xs sm:text-sm text-slate-900">${reg.name}</div>
+              <div class="text-[11px] text-slate-400 flex items-center gap-1">
+                <span>${reg.email}</span>
+                <span class="font-mono text-brand-600 font-medium">(${reg.id})</span>
+              </div>
+            </td>
+            <td class="px-6 py-3.5 text-xs text-slate-700 max-w-[200px] truncate" title="${reg.eventName}">
+              ${reg.eventName}
+            </td>
+            <td class="px-6 py-3.5 text-xs text-slate-600 whitespace-nowrap">
+              ${reg.collegeYear}
+            </td>
+            <td class="px-6 py-3.5 text-xs text-slate-600 whitespace-nowrap">
+              ${reg.phone}
+            </td>
+            <td class="px-6 py-3.5 text-xs text-slate-500 whitespace-nowrap">
+              ${reg.regDate || '2026-10-01'}
+            </td>
+            <td class="px-6 py-3.5 text-xs whitespace-nowrap">
+              ${reg.checkedIn
+                        ? '<span class="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-medium border border-emerald-200"><i data-lucide="check" class="w-3 h-3"></i> Checked In</span>'
+                        : '<span class="inline-flex items-center gap-1 text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full font-medium">Awaiting Entry</span>'
+                    }
+            </td>
+            <td class="px-6 py-3.5 text-right whitespace-nowrap">
+              <button 
+                onclick="toggleAttendeeCheckIn('${reg.id}')"
+                class="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${reg.checkedIn
+                        ? 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'
+                    }"
+              >
+                ${reg.checkedIn ? 'Revoke' : 'Check In'}
+              </button>
+            </td>
+          </tr>
+        `;
+            }).join("");
+
+            lucide.createIcons();
+        }
+
+        function toggleAttendeeCheckIn(regId) {
+            const reg = registrations.find(r => r.id === regId);
+            if (reg) {
+                reg.checkedIn = !reg.checkedIn;
+                saveRegistrations();
+                renderAdminAttendeesTable();
+                showToast(reg.checkedIn ? `Checked in ${reg.name}` : `Check-in revoked for ${reg.name}`);
+            }
+        }
+
+        function openAddEventModal() {
+            document.getElementById("event-editor-form").reset();
+            document.getElementById("editor-event-id").value = "";
+            document.getElementById("editor-modal-title").innerText = "Create New Event";
+            document.getElementById("editor-save-btn-text").innerText = "Publish Event";
+
+            // Default placeholder date
+            document.getElementById("editor-date").value = new Date().toISOString().split("T")[0];
+
+            openModal("modal-event-editor");
+        }
+
+        function openEditEventModal(eventId) {
+            const evt = events.find(e => e.id === eventId);
+            if (!evt) return;
+
+            document.getElementById("editor-event-id").value = evt.id;
+            document.getElementById("editor-title").value = evt.title;
+            document.getElementById("editor-category").value = evt.category;
+            document.getElementById("editor-seats").value = evt.totalSeats;
+            document.getElementById("editor-date").value = evt.date;
+            document.getElementById("editor-time").value = evt.time;
+            document.getElementById("editor-venue").value = evt.venue;
+            document.getElementById("editor-image").value = evt.image || "";
+            document.getElementById("editor-desc").value = evt.description;
+            document.getElementById("editor-featured").checked = !!evt.isFeatured;
+
+            document.getElementById("editor-modal-title").innerText = "Edit Event Details";
+            document.getElementById("editor-save-btn-text").innerText = "Update Event";
+
+            openModal("modal-event-editor");
+        }
+
+        function handleSaveEvent(e) {
+            e.preventDefault();
+            const id = document.getElementById("editor-event-id").value;
+            const title = document.getElementById("editor-title").value.trim();
+            const category = document.getElementById("editor-category").value;
+            const totalSeats = parseInt(document.getElementById("editor-seats").value, 10);
+            const date = document.getElementById("editor-date").value;
+            const time = document.getElementById("editor-time").value.trim();
+            const venue = document.getElementById("editor-venue").value.trim();
+            let image = document.getElementById("editor-image").value.trim();
+            const desc = document.getElementById("editor-desc").value.trim();
+            const isFeatured = document.getElementById("editor-featured").checked;
+
+            if (!image) {
+                image = "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1000&q=80";
+            }
+
+            if (isFeatured) {
+                // Untag previous featured event if setting a new one
+                events.forEach(evt => evt.isFeatured = false);
+            }
+
+            if (id) {
+                // Edit existing
+                const index = events.findIndex(evt => evt.id === id);
+                if (index !== -1) {
+                    events[index] = {
+                        ...events[index],
+                        title,
+                        category,
+                        totalSeats,
+                        date,
+                        time,
+                        venue,
+                        image,
+                        description: desc,
+                        isFeatured
+                    };
+                    showToast("Event updated successfully!");
+                }
+            } else {
+                // Create new
+                const newEvt = {
+                    id: "evt-" + Date.now().toString().slice(-4),
+                    title,
+                    category,
+                    totalSeats,
+                    registeredCount: 0,
+                    date,
+                    time,
+                    venue,
+                    image,
+                    description: desc,
+                    isFeatured
+                };
+                events.unshift(newEvt);
+                showToast("New event added to live catalog!");
+            }
+
+            saveEvents();
+            closeModal("modal-event-editor");
+            renderStudentCatalog();
+            renderFeaturedEvent();
+            renderAdminDashboard();
+            updateGlobalStats();
+        }
+
+        function confirmDeleteEvent(eventId) {
+            const evt = events.find(e => e.id === eventId);
+            if (!evt) return;
+
+            // Safe confirmation using standard inline prompt/confirmation modal pattern
+            const confirmed = window.confirm(`Are you sure you want to permanently delete '${evt.title}'? This will also remove associated attendees.`);
+            if (confirmed) {
+                events = events.filter(e => e.id !== eventId);
+                registrations = registrations.filter(r => r.eventId !== eventId);
+
+                saveEvents();
+                saveRegistrations();
+
+                renderStudentCatalog();
+                renderFeaturedEvent();
+                renderAdminDashboard();
+                updateGlobalStats();
+
+                showToast("Event deleted successfully.");
+            }
+        }
+
+        function exportRegistrationsCSV() {
+            if (registrations.length === 0) {
+                showToast("No registrations available to export.", "error");
+                return;
+            }
+
+            const headers = ["Ticket ID", "Attendee Name", "Email", "College / Dept", "Phone", "Event Name", "Registration Date", "Checked In"];
+            const rows = registrations.map(r => [
+                `"${r.id}"`,
+                `"${r.name}"`,
+                `"${r.email}"`,
+                `"${r.collegeYear}"`,
+                `"${r.phone}"`,
+                `"${r.eventName.replace(/"/g, '""')}"`,
+                `"${r.regDate || ''}"`,
+                `"${r.checkedIn ? 'Yes' : 'No'}"`
+            ]);
+
+            const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `nexus_club_registrations_${new Date().toISOString().split("T")[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast("Attendee CSV roster downloaded.");
+        }
+
+        function formatDateString(dateStr) {
+            if (!dateStr) return "TBD";
+            const parts = dateStr.split("-");
+            if (parts.length === 3) {
+                const d = new Date(parts[0], parts[1] - 1, parts[2]);
+                return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+            }
+            return dateStr;
+        }
+
+        function getCategoryBadgeStyle(category) {
+            switch (category) {
+                case "Technical":
+                    return "bg-blue-50 text-blue-700 border border-blue-200";
+                case "Hackathon":
+                    return "bg-purple-50 text-purple-700 border border-purple-200";
+                case "Workshop":
+                    return "bg-emerald-50 text-emerald-700 border border-emerald-200";
+                case "Cultural":
+                    return "bg-pink-50 text-pink-700 border border-pink-200";
+                case "Sports":
+                    return "bg-amber-50 text-amber-700 border border-amber-200";
+                default:
+                    return "bg-slate-100 text-slate-700 border border-slate-200";
+            }
+        }
+
+        function updateGlobalStats() {
+            const totalRegs = registrations.length;
+            const el = document.getElementById("stat-total-attendees");
+            if (el) el.innerText = (1200 + totalRegs).toLocaleString() + "+";
+
+            const evtsCount = document.getElementById("stat-total-events");
+            if (evtsCount) evtsCount.innerText = (events.length) + "+";
+        }
+
+        // Start on DOM ready
+        window.addEventListener("DOMContentLoaded", () => {
+            initializeApp();
+        });
+    </script>
+</body>
+
+</html>
